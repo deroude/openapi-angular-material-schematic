@@ -1,0 +1,9 @@
+{
+  "$schema": "../node_modules/@angular-devkit/schematics/collection-schema.json",
+  "schematics": {
+    "openapi-angular-material": {
+      "description": "Schematic for Angular Material CRUD boilerplate generation from OpenAPI",
+      "factory": "./openapi-angular-material/index"
+    }
+  }
+}

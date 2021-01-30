@@ -1,0 +1,64 @@
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { Observable } from 'rxjs';
+import { <%= classify(name) %> } from '@model/<%= dasherize(name) %>'; // TODO specify your model source
+import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
+import { map } from 'rxjs/operators';
+import { <%= classify(name) %>Service } from '@api/<%= dasherize(name) %>.service'; // TODO specify your service source
+import { MatDialog } from '@angular/material/dialog';
+import { <%= classify(name) %>EditorComponent } from '../editor/<%= dasherize(name) %>-editor.component';
+
+@Component({
+  selector: '<%= selectorPrefix %>-<%= dasherize(name)%>-list ',
+  templateUrl: './<%= dasherize(name) %>-list.component.html',
+  styleUrls: ['./<%= dasherize(name) %>-list.component.scss']
+})
+export class <%= classify(name) %>ListComponent implements OnInit {
+
+  @ViewChild(MatSort) sort: MatSort;
+  dataSource: MatTableDataSource<<%= classify(name) %>>;
+  displayedColumns = [<%= properties.map(p=>`"${p.name}"`).join(',')  %>];
+
+  constructor(private <%= name %>Service: <%= classify(name) %>Service, public dialog: MatDialog) { }
+
+  ngOnInit(): void {
+    this.refresh();
+  }
+
+  refresh(): void {
+    this.<%= name %>Service.get<%= classify(name) %>List().subscribe(list => {
+      this.dataSource = new MatTableDataSource(list);
+      this.dataSource.sort = this.sort;
+    });
+  }
+
+  applyFilter(filterValue: string): void {
+    this.dataSource.filter = filterValue.trim().toLowerCase();
+  }
+
+  onRowSelect(row: <%= classify(name) %>): void {
+    const dialogRef = this.dialog.open(<%= classify(name) %>EditorComponent, {
+      width: '800px',
+      data: row
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.<%= name %>Service.update<%= classify(name) %>(row.id, result).subscribe(() => this.refresh());
+      }
+    });
+  }
+
+  create(): void {
+    const dialogRef = this.dialog.open(<%= classify(name) %>EditorComponent, {
+      width: '800px',
+      data: {}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.<%= name %>Service.add<%= classify(name) %>(result).subscribe(() => this.refresh());
+      }
+    });
+  }
+}

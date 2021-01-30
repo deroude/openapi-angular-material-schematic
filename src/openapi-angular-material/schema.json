@@ -1,0 +1,40 @@
+{
+    "$schema": "http://json-schema.org/schema",
+    "id": "SchematicsOpenAPIAngularMaterialBoilerplate",
+    "title": "OpenAPI Angular Material Options Schema",
+    "type": "object",
+    "description": "Creates the boilerplate for Angular Material CRUD components based on an OpenAPI spec",
+    "properties": {
+        "api": {
+            "type": "string",
+            "default": "api.yaml",
+            "x-prompt": "Path to the OpenAPI yaml file."
+        },
+        "style": {
+            "description": "The file extension or preprocessor to use for style files.",
+            "type": "string",
+            "default": "scss",
+            "enum": [
+              "css",
+              "scss",
+              "sass",
+              "less",
+              "styl"
+            ],
+            "x-user-analytics": 5
+          },
+          "selectorPrefix": {
+            "description": "The selector prefix to be applied on each component",
+            "type": "string",
+            "default": "app"
+          },
+          "module":  {
+            "type": "string",
+            "description": "The declaring NgModule.",
+            "alias": "m"
+          }
+    },
+    "required": [
+        "api"
+      ]
+}

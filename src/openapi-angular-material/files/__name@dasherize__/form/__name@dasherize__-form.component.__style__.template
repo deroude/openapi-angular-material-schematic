@@ -1,0 +1,13 @@
+   :host {
+        height: 53rem;
+        display: flex;
+        flex-direction: column;
+   }
+
+
+   form {
+        display: flex;
+        flex-direction: column;
+        margin: 1rem;
+        max-height: 100%;
+   }

@@ -1,0 +1,31 @@
+<h1 mat-dialog-title i18n="@@<%= name %>.editor">Edit <%= name %></h1>
+    <form mat-dialog-content [formGroup]="form" (ngSubmit)="save()">
+
+    <% for(let prop of properties) { if(!prop.isId) { %>
+        <mat-form-field><% switch(prop.type){
+            case 'date': %>
+            <mat-label i18n="@@<%= name %>.<%= prop.name %>"><%= prop.description||prop.name %></mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="<%= prop.name %>">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+    <%          break;
+            case 'enum':%>
+            <mat-label i18n="@@<%= name %>.<%= prop.name %>">><%= prop.description||prop.name %></mat-label>
+            <mat-select formControlName="<%= prop.name %>"><% for (let option of prop.enumOptions) { %>
+                <mat-option value="<%= option %>" i18n="@@<%= name %>.<%= prop.name %>.<%= option %>"><%= option %></mat-option><% } %>
+            </mat-select>
+    <%         break;
+            case 'string':
+            case 'number':        
+            default: %>
+            <input matInput formControlName="<%= prop.name %>" type="text" i18n-placeholder="@@<%= name %>.<%= prop.name %>" placeholder="<%= prop.description||prop.name %>">
+    <% } %>        <mat-error *ngIf="hasError('required','<%= prop.name %>')" i18n="@@error.field.required">
+                            This field is required.
+            </mat-error>
+        </mat-form-field>
+    <% }} %>          
+    </form>
+<div mat-dialog-actions>
+    <button mat-raised-button (click)="close()" i18n="@@cancel">Cancel</button>
+    <button mat-raised-button (click)="save()" color="primary" cdkFocusInitial i18n="@@save">Save</button>
+</div>

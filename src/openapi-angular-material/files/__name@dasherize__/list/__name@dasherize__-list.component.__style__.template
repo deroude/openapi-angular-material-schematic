@@ -1,0 +1,17 @@
+div.crud-table{
+  max-width: 50rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+table {
+  width: 100%;
+  tr:hover{
+    background-color: whitesmoke;
+  }
+}
+
+.mat-form-field {
+  font-size: 14px;
+  width: 100%;
+}

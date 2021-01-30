@@ -1,0 +1,45 @@
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { <%= classify(name) %> } from '@model/<%= dasherize(name) %>'; // TODO specify your model source
+
+@Component({
+  selector: '<%= selectorPrefix %>-<%= dasherize(name) %>-form',
+  templateUrl: './<%= dasherize(name) %>-form.component.html',
+  styleUrls: ['./<%= dasherize(name) %>-form.component.scss']
+})
+export class <%= classify(name) %>EditorComponent implements OnInit {
+
+  constructor(
+    public dialogRef: MatDialogRef<%= classify(name) %>EditorComponent>,
+    @Inject(MAT_DIALOG_DATA) public item: <%= classify(name) %>, private fb: FormBuilder, private changeDetection: ChangeDetectorRef) {
+    this.userForm = this.fb.group({
+      <%= properties.map(prop => `${prop.name}: [this.item.${prop.name}${prop.isRequired?', [Validators.required]':''}]`).join(',\n\t\t\t')%>
+    });
+  }
+
+  form: FormGroup;
+
+  codes: string[] = [];
+
+  ngOnInit(): void { }
+
+
+  hasError(error: string, field: string): boolean {
+    return this.form.controls[field].touched
+      && (this.form.hasError(error, [field]) || this.form.hasError(error));
+  }
+
+  save(): void {
+    if (this.form.valid) {
+      this.dialogRef.close(
+        this.form.value
+      );
+    }
+  }
+
+  close(): void {
+    this.dialogRef.close();
+  }
+
+}

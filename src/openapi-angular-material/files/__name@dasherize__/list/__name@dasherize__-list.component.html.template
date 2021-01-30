@@ -1,0 +1,45 @@
+<div class="crud-table">
+  <mat-form-field>
+    <input matInput (keyup)="applyFilter($event.target.value)" i18n-placeholder="@@filter" placeholder="Filter">
+  </mat-form-field>
+
+  <button mat-button i18n="@@<%= name %>.add" (click)="create()">Add <%= classify(name) %></button>
+
+  <table mat-table [dataSource]="dataSource" matSort>
+<% for(let prop of properties) { 
+    switch(prop.type){
+        case 'date': %>
+    <ng-container matColumnDef="<%= prop.name %>">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header i18n="@@<%= name %>.<%= prop.name %>"> <%= prop.description|prop.name %> </th>
+        <td mat-cell *matCellDef="let row"> {{row.<%= prop.name %>|date}} </td>
+    </ng-container>
+<%
+            break;
+        case 'enum':
+%>
+    <ng-container matColumnDef="<%= prop.name %>">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header i18n="@@<%= name %>.<%= prop.name %>"> <%= prop.description|prop.name %> </th>
+        <td mat-cell *matCellDef="let row">
+            <ng-container [ngSwitch]="row.<%= prop.name %>">
+<% for (let option of prop.enumOptions) { %> 
+                <ng-container *ngSwitchCase="'<%= option %>'" i18n="@@<%= name %>.<%= prop.name %>.<%= option %>"><%= option %></ng-container><% } %>
+            </ng-container>
+        </td>
+    </ng-container>
+<%
+            break;
+        case 'string':
+        case 'number':        
+        default: %>    
+    <ng-container matColumnDef="<%= prop.name %>">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header i18n="@@<%= name %>.<%= prop.name %>"> <%= prop.description|prop.name %> </th>
+      <td mat-cell *matCellDef="let row"> {{row.<%= prop.name %>}} </td>
+    </ng-container>    
+<% }} %>    
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;" (dblclick)="onItemSelect(row)">
+    </tr>
+  </table>
+
+</div>
