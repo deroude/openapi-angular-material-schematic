@@ -8,7 +8,8 @@
         "api": {
             "type": "string",
             "default": "api.yaml",
-            "x-prompt": "Path to the OpenAPI yaml file."
+            "x-prompt": "Path to the OpenAPI yaml file.",
+            "alias": "a"
         },
         "style": {
             "description": "The file extension or preprocessor to use for style files.",
@@ -32,6 +33,12 @@
             "type": "string",
             "description": "The declaring NgModule.",
             "alias": "m"
+          },
+          "path":  {
+            "type": "string",
+            "description": "The path from the root project folder where to write the components",
+            "default": "src/app/components",
+            "alias": "p"
           }
     },
     "required": [

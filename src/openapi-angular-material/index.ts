@@ -5,7 +5,7 @@
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-import { virtualFs, workspaces, strings } from '@angular-devkit/core';
+import { strings } from '@angular-devkit/core';
 import {
   Rule,
   Tree,
@@ -17,10 +17,14 @@ import {
   move,
   SchematicsException
 } from '@angular-devkit/schematics';
+import { addDeclarationToModule } from '@schematics/angular/utility/ast-utils';
 import fs from 'fs';
 import * as yaml from 'js-yaml';
 import { OpenAPIV3 } from 'express-openapi-validator/dist/framework/types';
-import { ProjectDefinition } from '@angular-devkit/core/src/workspace';
+
+import * as ts from 'typescript';
+import { classify, dasherize } from '@angular-devkit/core/src/utils/strings';
+import { InsertChange } from '@schematics/angular/utility/change';
 
 type PropType = 'number' | 'string' | 'boolean' | 'date' | 'enum';
 
@@ -57,6 +61,15 @@ const defaultOptions: any = {
   selectorPrefix: 'app'
 }
 
+function readIntoSourceFile(tree: Tree, modulePath: string): ts.SourceFile {
+  const source = tree.read(modulePath);
+  if (!source) {
+    throw new SchematicsException(`File ${modulePath} does not exist.`);
+  }
+  const sourceText = source.toString('utf-8');
+  return ts.createSourceFile(modulePath, sourceText, ts.ScriptTarget.Latest, true);
+}
+
 export function loadEntities(api: OpenAPIV3.Document): Entity[] {
   const entities: Entity[] = [];
   if (api && api.components && api.components.schemas) {
@@ -72,7 +85,7 @@ export function loadEntities(api: OpenAPIV3.Document): Entity[] {
               isId: pk.toLowerCase() === 'id',
               description: p.description,
               isRequired: schema.required && schema.required.indexOf(pk.toLowerCase()) > 0,
-              type: typeMap[`${p.type}${p.format?`:${p.format}`:''}${p.enum?':enum':''}`],
+              type: typeMap[`${p.type}${p.format ? `:${p.format}` : ''}${p.enum ? ':enum' : ''}`],
               enumOptions: p.enum
             })
           }
@@ -84,74 +97,36 @@ export function loadEntities(api: OpenAPIV3.Document): Entity[] {
   return entities;
 }
 
-// function addDeclarationToNgModule(options: any): Rule {
-//   return (host: Tree) => {
-//     if (options.skipImport || !options.module) {
-//       return host;
-//     }
+function addDeclarationToNgModule(entity: string, options: any): Rule {
+  return (host: Tree) => {
+    const modulePath = options.module;
+    try {
+      const source = readIntoSourceFile(host, modulePath);
+      if (!source) {
+        throw new SchematicsException('Unable to find module');
+      }
+      const declarationRecorder = host.beginUpdate(modulePath);
 
-//     const modulePath = options.module;
-//     const source = readIntoSourceFile(host, modulePath);
+      const listChanges = addDeclarationToModule(source, modulePath, `${classify(entity)}ListComponent`, `${options.path}/${dasherize(entity)}/list/${dasherize(entity)}-list.component`);
+      for (const change of listChanges) {
+        if (change instanceof InsertChange) {
+          declarationRecorder.insertLeft(change.pos, change.toAdd);
+        }
+      }
+      const editorChanges = addDeclarationToModule(source, modulePath, `${classify(entity)}EditorComponent`, `${options.path}/${dasherize(entity)}/form/${dasherize(entity)}-form.component`);
+      for (const change of editorChanges) {
+        if (change instanceof InsertChange) {
+          declarationRecorder.insertLeft(change.pos, change.toAdd);
+        }
+      }
+      host.commitUpdate(declarationRecorder);
+    } catch (err) {
+      console.error(err);
+    }
 
-//     const componentPath = `/${options.path}/`
-//                           + (options.flat ? '' : strings.dasherize(options.name) + '/')
-//                           + strings.dasherize(options.name)
-//                           + (options.type ? '.' : '')
-//                           + strings.dasherize(options.type);
-//     const relativePath = buildRelativePath(modulePath, componentPath);
-//     const classifiedName = strings.classify(options.name) + strings.classify(options.type);
-//     const declarationChanges = addDeclarationToModule(source,
-//                                                       modulePath,
-//                                                       classifiedName,
-//                                                       relativePath);
-
-//     const declarationRecorder = host.beginUpdate(modulePath);
-//     for (const change of declarationChanges) {
-//       if (change instanceof InsertChange) {
-//         declarationRecorder.insertLeft(change.pos, change.toAdd);
-//       }
-//     }
-//     host.commitUpdate(declarationRecorder);
-
-//     if (options.export) {
-//       // Need to refresh the AST because we overwrote the file in the host.
-//       const source = readIntoSourceFile(host, modulePath);
-
-//       const exportRecorder = host.beginUpdate(modulePath);
-//       const exportChanges = addExportToModule(source, modulePath,
-//                                               strings.classify(options.name) + strings.classify(options.type),
-//                                               relativePath);
-
-//       for (const change of exportChanges) {
-//         if (change instanceof InsertChange) {
-//           exportRecorder.insertLeft(change.pos, change.toAdd);
-//         }
-//       }
-//       host.commitUpdate(exportRecorder);
-//     }
-
-//     if (options.entryComponent) {
-//       // Need to refresh the AST because we overwrote the file in the host.
-//       const source = readIntoSourceFile(host, modulePath);
-
-//       const entryComponentRecorder = host.beginUpdate(modulePath);
-//       const entryComponentChanges = addEntryComponentToModule(
-//         source, modulePath,
-//         strings.classify(options.name) + strings.classify(options.type),
-//         relativePath);
-
-//       for (const change of entryComponentChanges) {
-//         if (change instanceof InsertChange) {
-//           entryComponentRecorder.insertLeft(change.pos, change.toAdd);
-//         }
-//       }
-//       host.commitUpdate(entryComponentRecorder);
-//     }
-
-
-//     return host;
-//   };
-// }
+    return host;
+  };
+}
 
 async function loadApi(apiPath: string): Promise<OpenAPIV3.Document> {
   if (apiPath && fs.existsSync(apiPath)) {
@@ -166,40 +141,9 @@ async function loadApi(apiPath: string): Promise<OpenAPIV3.Document> {
   return Promise.reject(`API path invalid: ${apiPath}`);
 }
 
-function createHost(tree: Tree): workspaces.WorkspaceHost {
-  return {
-    async readFile(path: string): Promise<string> {
-      const data = tree.read(path);
-      if (!data) {
-        throw new Error('File not found.');
-      }
-
-      return virtualFs.fileBufferToString(data);
-    },
-    async writeFile(path: string, data: string): Promise<void> {
-      return tree.overwrite(path, data);
-    },
-    async isDirectory(path: string): Promise<boolean> {
-      // approximate a directory check
-      return !tree.exists(path) && tree.getDir(path).subfiles.length > 0;
-    },
-    async isFile(path: string): Promise<boolean> {
-      return tree.exists(path);
-    },
-  };
-}
-
-async function getWorkspace(tree: Tree, path = '/') {
-  const host = createHost(tree);
-
-  const { workspace } = await workspaces.readWorkspace(path, host);
-
-  return workspace;
-}
-
 
 export default function (options: any): Rule {
-  return async (tree: Tree) => {
+  return async () => {
 
     let api: OpenAPIV3.Document
     try {
@@ -208,20 +152,15 @@ export default function (options: any): Rule {
       throw new SchematicsException(`Unable to load API file: ${err}`);
     }
 
-    let project: ProjectDefinition | undefined;
-
-    try {
-      const workspace = await getWorkspace(tree);
-      project = workspace.projects.get(options.project as string);
-    } catch (err) { }
-
-    let path = `${project ? project.sourceRoot : ''}/app/components`
+    let path = options.path || `src/app/components`;
+    let module = options.module || `src/app/app.module.ts`;
 
     return chain(loadEntities(api).map(
       entity => {
         const templateSource = apply(url('./files'), [
-          applyTemplates({ ...defaultOptions, ...options, ...entity, project, ...strings }),
-          move(path)
+          applyTemplates({ ...defaultOptions, ...options, ...entity, ...strings }),
+          move(path),
+          addDeclarationToNgModule(entity.name, { path, module, ...options })
         ]);
         return mergeWith(templateSource);
       }
