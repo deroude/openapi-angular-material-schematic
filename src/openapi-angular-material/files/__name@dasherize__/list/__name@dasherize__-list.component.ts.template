@@ -6,7 +6,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { map } from 'rxjs/operators';
 import { <%= classify(name) %>Service } from '@api/<%= dasherize(name) %>.service'; // TODO specify your service source
 import { MatDialog } from '@angular/material/dialog';
-import { <%= classify(name) %>EditorComponent } from '../editor/<%= dasherize(name) %>-editor.component';
+import { <%= classify(name) %>EditorComponent } from '../form/<%= dasherize(name) %>-form.component';
 
 @Component({
   selector: '<%= selectorPrefix %>-<%= dasherize(name)%>-list ',

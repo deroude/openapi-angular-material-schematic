@@ -11,9 +11,9 @@ import { <%= classify(name) %> } from '@model/<%= dasherize(name) %>'; // TODO s
 export class <%= classify(name) %>EditorComponent implements OnInit {
 
   constructor(
-    public dialogRef: MatDialogRef<%= classify(name) %>EditorComponent>,
+    public dialogRef: MatDialogRef<<%= classify(name) %>EditorComponent>,
     @Inject(MAT_DIALOG_DATA) public item: <%= classify(name) %>, private fb: FormBuilder, private changeDetection: ChangeDetectorRef) {
-    this.userForm = this.fb.group({
+    this.form = this.fb.group({
       <%= properties.map(prop => `${prop.name}: [this.item.${prop.name}${prop.isRequired?', [Validators.required]':''}]`).join(',\n\t\t\t')%>
     });
   }
