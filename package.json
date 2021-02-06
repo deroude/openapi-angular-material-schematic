@@ -1,6 +1,6 @@
 {
   "name": "openapi-angular-material-schematic",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Schematic for Angular Material CRUD from OpenAPI spec",
   "scripts": {
     "build": "tsc -p tsconfig.json",
