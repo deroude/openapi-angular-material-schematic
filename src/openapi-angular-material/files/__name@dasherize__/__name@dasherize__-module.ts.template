@@ -1,4 +1,25 @@
 import { NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTableModule } from '@angular/material/table';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatMomentDateModule } from '@angular/material-moment-adapter';
+import { MatListModule } from '@angular/material/list';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatButtonModule } from '@angular/material/button';
+import { MatRadioModule } from '@angular/material/radio';
+
 import { <%= classify(name) %>EditorComponent } from './form/<%= dasherize(name) %>-form.component';
 import { <%= classify(name) %>ListComponent } from './list/<%= dasherize(name) %>-list.component';
 
@@ -8,6 +29,29 @@ const components = [
 ];
 
 @NgModule({
+    imports:[
+        FormsModule,
+        ReactiveFormsModule,
+        MatButtonModule,
+        MatSelectModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatProgressBarModule,
+        MatTableModule,
+        MatToolbarModule,
+        MatBadgeModule,
+        MatPaginatorModule,
+        MatIconModule,
+        MatCheckboxModule,
+        MatRadioModule,
+        MatDatepickerModule,
+        MatMomentDateModule,
+        MatListModule,
+        MatDialogModule,
+        MatChipsModule,
+        MatSnackBarModule,
+        MatTooltipModule
+    ],
     declarations: components,
     exports: components
 })
