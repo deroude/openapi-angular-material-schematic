@@ -10,7 +10,7 @@
     switch(prop.type){
         case 'date': %>
     <ng-container matColumnDef="<%= prop.name %>">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header i18n="@@<%= name %>.<%= prop.name %>"> <%= prop.description|prop.name %> </th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header i18n="@@<%= name %>.<%= prop.name %>"> <%= prop.description||prop.name %> </th>
         <td mat-cell *matCellDef="let row"> {{row.<%= prop.name %>|date}} </td>
     </ng-container>
 <%
@@ -18,7 +18,7 @@
         case 'enum':
 %>
     <ng-container matColumnDef="<%= prop.name %>">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header i18n="@@<%= name %>.<%= prop.name %>"> <%= prop.description|prop.name %> </th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header i18n="@@<%= name %>.<%= prop.name %>"> <%= prop.description||prop.name %> </th>
         <td mat-cell *matCellDef="let row">
             <ng-container [ngSwitch]="row.<%= prop.name %>">
 <% for (let option of prop.enumOptions) { %> 
@@ -32,13 +32,13 @@
         case 'number':        
         default: %>    
     <ng-container matColumnDef="<%= prop.name %>">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header i18n="@@<%= name %>.<%= prop.name %>"> <%= prop.description|prop.name %> </th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header i18n="@@<%= name %>.<%= prop.name %>"> <%= prop.description||prop.name %> </th>
       <td mat-cell *matCellDef="let row"> {{row.<%= prop.name %>}} </td>
     </ng-container>    
 <% }} %>    
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;" (dblclick)="onItemSelect(row)">
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;" (dblclick)="onRowSelect(row)">
     </tr>
   </table>
 
